@@ -1,0 +1,1029 @@
+=====================================
+    Conceito de Serverless
+=====================================
+
+Serverless na AWS significa usar serviços que não exigem que você gerencie servidores, mesmo que servidores ainda existam “nos bastidores”.
+A AWS cuida automaticamente de toda a infraestrutura, como capacidade, escalabilidade, disponibilidade, patches e provisionamento.
+Você só foca no código ou nos dados — não em máquinas.
+
+=== Características de Serverless na AWS
+
+Sem provisionar servidores (EC2, etc.).
+Escala automática baseada na demanda.
+Alta disponibilidade embutida.
+Cobrança por uso real (por request, execução, leitura, gravação, etc.).
+Nenhuma manutenção de infraestrutura.
+
+=== Exemplos de serviços Serverless (que caem na prova)
+
+AWS Lambda → Executa código sem servidores.
+Amazon S3 → Armazenamento serverless.
+DynamoDB (On-demand) → NoSQL totalmente gerenciado.
+Aurora Serverless → Banco relacional que escala sozinho.
+API Gateway → Criação de APIs sem servidores.
+EventBridge → Eventos serverless.
+SQS / SNS → Mensageria serverless.
+Fargate → Containers sem gerenciar EC2.
+Athena → SQL serverless para consultar dados no S3.
+
+
+=====================================
+                EC2
+=====================================
+
+=== Opções de configuração da EC2:
+
+SO;
+CPU;
+RAM;
+Storage;
+Firewall (Security Groups);
+User Data (script inicial que roda na criação da instância -> to bootstrap), roda como root user;
+Acesso a rede que inclui velocidade, e se terá IP público ou não;
+
+=== Tipos de instância:
+
+General Purpose: Equilíbrio entre CPU, memória e rede. Instâncias T são “burstable” (variam desempenho), M são estáveis. Exemplo de uso: Aplicações web, microserviços, bancos leves.
+
+Compute Optimized: Bancos de dados, cache em memória (Redis, Memcached), e análise em tempo real. Exemplo de uso: Jogos, processamento batch, APIs com alto tráfego.
+
+Memory Optimized: Bancos de dados, cache em memória (Redis, Memcached), e análise em tempo real. Exemplo de uso: Bancos de dados grandes, análises em memória.
+
+Storage Optimized: Perfeito para bancos NoSQL, Big Data, ou sistemas de arquivos distribuídos. Exemplo de uso: Big Data, Elasticsearch, Hadoop.
+
+Accelerated Computing: Usado para IA/ML, renderização gráfica, computação científica e inferência. Exemplo de uso: Machine Learning, renderização, computação científica.
+
+
+
+=== Tipos de planos para EC2
+
+1. On-Demand Instances
+
+Pague pelo uso — por hora ou segundo.
+Sem compromisso: você cria e encerra quando quiser.
+Ideal para workloads temporários, imprevisíveis ou de teste.
+Mais caro por hora, mas máxima flexibilidade.
+Use quando: você está testando, iniciando ou tem cargas variáveis.
+
+2. Reserved Instances (RIs)
+
+Você reserva capacidade por 1 ou 3 anos e ganha grande desconto (até ~70%).
+Paga Upfront, Parcial ou Sem Upfront.
+Ideal para workloads estáveis e previsíveis (ex: servidores de banco de dados).
+Tipos:
+	Standard RI → maior desconto, mas menos flexível (tipo e região fixos).
+	Convertible RI → desconto menor, mas permite trocar tipo/família de instância.
+Use quando: você sabe que vai usar EC2 constantemente por longo prazo.
+
+
+2.1 EC2 Capacity Reservation (Pode confundir com Reserved Instances, por isso é bom saber a diferença)
+
+Garante capacidade de instâncias EC2 em uma zona de disponibilidade específica.
+Você paga preço On-Demand, mesmo que as instâncias não estejam em uso.
+Sem compromisso de tempo — pode ativar ou cancelar quando quiser.
+Serve para garantir disponibilidade, não para obter desconto.
+Pode ser combinado com Reserved Instances para ter desconto e reserva física.
+Em resumo:
+	Capacity Reservation = reserva de espaço físico
+	Reserved Instance = reserva com desconto financeiro
+
+
+3. Spot Instances
+
+Usa capacidade ociosa da AWS com descontos de até 90%.
+Pode ser interrompida a qualquer momento (a AWS recupera a instância).
+Boa para tarefas tolerantes a falhas (Big Data, renderização, testes paralelos).
+Use quando: o processamento pode ser interrompido e reiniciado depois.
+Não serve para trabalhos críticos, ou banco de dados (o exame pode te testar nisso)
+
+4. Savings Plans
+
+Plano de desconto flexível baseado em compromisso de gasto ($/hora), não em tipo de instância.
+Você escolhe gastar, por exemplo, $10/hora em EC2 por 1 ou 3 anos, e ganha até 66% de desconto.
+Mais flexível que Reserved Instances (pode mudar tipo, região, tamanho, etc.).
+Use quando: quer descontos de longo prazo, mas com flexibilidade para mudar instâncias.
+
+5. Dedicated Hosts / Dedicated Instances 
+
+Dedicated Instance
+Instância EC2 executando em hardware dedicado a você, mas ainda gerenciado pela AWS.	
+Usar quando: Exigências de compliance ou licenciamento.
+
+Dedicated Host	
+Servidor físico inteiro reservado para o cliente.	
+Usar quando: Licenças de software com restrição física (Windows Server, Oracle).
+
+
+=== Qual purchasing option é a certa pra mim? (Analogia com Hotel)
+
+-On-Demand: é como ir ao resort quando quiser, sem reserva. Você paga o preço cheio pela diária.
+-Reserved: é como planejar com antecedência e reservar a estadia por um longo período — e, por isso, recebe um bom desconto.
+-Savings Plans: é como pagar um valor fixo por hora para se hospedar por um certo período, podendo ficar em qualquer tipo de quarto (King, Suíte, Vista para o mar etc.).
+-Spot Instances: o hotel leiloa os quartos vagos, e quem oferecer o maior lance fica com eles — mas pode ser expulso a qualquer momento se o hotel precisar do quarto.
+-Dedicated Hosts: é como alugar um prédio inteiro do resort, só para você.
+-Capacity Reservations: é como reservar um quarto e pagar o preço total, mesmo que você não durma nele — apenas para garantir que ele estará disponível.
+
+
+=====================================
+           Security Groups
+=====================================
+
+São os "Firewalls" da AWS, nele você define quem pode ou não pode acessar determinado serviço, controla regras de entrada e saída de serviços da AWS. Pode ser usado em múltiplas instâncias, e cada instância pode ter vários Security Grups. Por padrão todo o trafego que entra é bloqueado, e tudo o que sai é permitido.
+
+
+=====================================
+        EC2 Storage Section
+=====================================
+
+=============================EBS vs EFS====================================
+
+
+=== EBS - Elastic Block Store
+
+É um "pendrive" virtual que permite que dados sejam gravado mesmo depois da instância ser encerrada. Só pode ser atribuido a uma instância por vez no nivel de Cloud Pratictioner. São associados a uma zona de disponibilidade específica.
+Você define a capacidade e é cobrado por isso, e pode fazer alterações se necessário.
+Por padrão, o EBS raiz, é deletado junto com a instância, os outros que são colocados além do EBS raiz não são deletados por padrão após o fim da instância. É possível alterar isso.
+
+=== EBS Snapshots
+
+É sempre bom fazer snapshots depois de um tempo de uso do EBS.
+Não é necessário desassociar o EBS de uma instância para fazer um snapshot mas é recomendado. Fazer snapshots é bom para recuperar dados, e permite mover os dados de um EBS de uma AZ para outra. 
+
+Features:
+
+-EBS Snapshot Archive:
+Move um snapshot para uma “camada de arquivamento”, que é 75% mais barata.
+A restauração de um snapshot arquivado leva de 24 a 72 horas.
+
+-Recycle Bin for EBS Snapshots:
+Permite definir regras para reter snapshots excluídos, possibilitando recuperá-los em caso de exclusão acidental.
+É possível especificar o tempo de retenção, de 1 dia até 1 ano.
+
+Resumo rápido:
+O Snapshot Archive reduz custos de armazenamento de longo prazo,
+e o Recycle Bin protege contra exclusões acidentais.
+
+=== EFS - Elastic File Sy0stem
+
+NFS gerenciado (network file system) que pode ser montado em 100 EC2 ao mesmo tempo. Pode ser usado em multi AZ. Alta disponibilidade, escalavel e pague por uso.
+
+Existe também o EFS-IA (Infrequent Access), que é usado para arquivos que não são acessados todos os dias, é muito mais barato que o EFS padrão. O EFS irá mover os arquivos para o EFS-IA automaticamente baseado na ultima vez que ele foi acessado.
+
+===========================================================================
+
+=== EC2 Instance Store
+
+É parecido com o EBS mas é um hardware ao invés de um network drive, e por isso tem uma maior performance
+
+
+=====================================
+           ELB e ASG
+=====================================
+
+=== Escalibilidade e Elasticidade
+
+Quando falamos de escalabilidade queremos dizer a capacidade que um sistema tem de suportar altas cargas de acesso.
+Elasticidade significa aumentar a disponibilidade daquele serviço de acordo com a demanda (criar mais instâncias)
+
+=== ELB - Elastic Load Balancer
+
+Um Load Balancer distribui automaticamente o tráfego (requisições) entre múltiplas instâncias/recursos.
+Ele serve para:
+
+- Evitar sobrecarga em um único servidor
+- Aumentar disponibilidade (alta disponibilidade)
+- Suportar falhas (fault tolerance)
+- Melhorar desempenho
+- Escalar horizontalmente
+
+Existem 3 tipos de Load Balancer na AWS
+
+=== Application Load Balancer (ALB)
+
+Camada 7 (HTTP/HTTPS)
+Balanceia tráfego baseado no conteúdo da requisição (path, host, headers, query string, etc.)
+Ideal para apps web, microserviços, APIs REST
+Suporta WebSockets
+Suporta regras avançadas de roteamento (ex: /api para um target group, /login para outro)
+
+Use ALB quando:
+- Precisa de roteamento avançado
+- Tem aplicações HTTP/HTTPS
+- Usa containers e microserviços (ECS/EKS)
+
+== Network Load Balancer (NLB)
+
+Camada 4 (TCP, UDP, TLS)
+Extremamente rápido e eficiente
+Ideal para tráfego de alta performance, baixa latência e milhões de conexões por segundo
+Suporta static IP e Elastic IP
+Usado para sistemas que exigem muita performance (bancos, jogos, telecom)
+
+Use NLB quando:
+- Precisa de altíssima performance
+- Trabalha com TCP/UDP
+- Necessita de endereços IP estáticos
+
+
+=== Gateway Load Balancer (GWLB)
+
+Usado para appliances de segurança, como firewalls, IDS/IPS
+Trabalha na Camada 3 (IP)
+Encaminha tráfego para appliances virtuais de parceiros
+Mantém o fluxo original do pacote (transparente)
+
+Use GWLB quando:
+- Precisa inserir firewalls ou sistemas de inspeção de pacotes na rede
+- Quer escalar appliances de segurança automaticamente
+
+
+=== ASG - Auto Scaling Group
+
+Aumenta ou diminui os recursos de acordo com a necessidade e o objetivo.
+
+
+=====================================
+          Amazon S3
+=====================================
+
+O Amazon S3 (Simple Storage Service) é um serviço de armazenamento de objetos altamente escalável, durável e econômico. Ele permite armazenar qualquer tipo de dado (imagens, vídeos, documentos, backups, logs etc.) dentro de buckets, com acesso pela internet. O armazenamento ocorre dentro de Buckets que basicamente são como diretórios, e os arquivos são chamados de 'Objects'. 
+Os objetos do bucket tem uma chave que é o caminho completo do arquivo.
+O Tamanho maximo de um arquivo é de 5TB.
+Os arquivos podem ter versões (se isso estiver habilitado).
+
+Principais características:
+
+- Durabilidade de 99.999999999% (11 9s)
+- Alta disponibilidade e escalabilidade automática
+- Armazenamento de objetos, não de blocos nem arquivos
+- Versões e replicação (Versioning, Cross-Region Replication)
+- Classes de armazenamento para reduzir custos (Standard, IA, Glacier etc.)
+- Controle de acesso via IAM, Bucket Policies e ACLs
+- Criptografia em repouso (SSE) e em trânsito (HTTPS)
+- Eventos integrados com outros serviços (S3 Events → Lambda, SQS, SNS)
+- Static Website Hosting para sites estáticos
+- Lifecycle Policies para mover dados entre classes ou expirar objetos
+
+
+Casos de uso do Amazon S3 
+
+- Armazenamento de backups e recuperação de desastres.
+- Data lakes e armazenamento para Big Data.
+- Armazenamento e distribuição de conteúdo estático (imagens, vídeos, documentos).
+- Hospedagem de sites estáticos.
+- Arquivamento e retenção de longo prazo.
+- Armazenamento de logs e auditoria.
+- Armazenamento para aplicações web e mobile.
+- Armazenamento de datasets para Machine Learning.
+- Migração e transferência de grandes volumes de dados.
+- Compartilhamento seguro de arquivos entre contas e usuários.
+
+=== Bucket Policies - formas para proteger os buckets
+
+Bucket Policies são documentos em formato JSON usados para controlar o acesso a um bucket do Amazon S3 e aos objetos dentro dele. Elas funcionam no nível do bucket, permitindo definir quem pode acessar (ou negar acesso) e quais ações podem ser executadas.
+
+Principais características:
+São baseadas em IAM policies, mas aplicadas diretamente ao bucket.
+Permitem conceder acesso a outras contas AWS, usuários específicos ou ao público (ex: para sites estáticos).
+Podem permitir ou negar ações como GetObject, PutObject, ListBucket etc.
+Usam condições (via "Condition") para restringir acesso por IP, VPC, HTTPS obrigatório, entre outros.
+São aplicadas antes das permissões individuais dos objetos, mas podem ser sobrepostas por ACLs.
+Úteis para cenários como acesso público controlado, cross-account e integrações com CloudFront.
+
+Podemos fazer replicas da S3 que podem ser Cross-Region (CRR) ou Same-Region(SRR)
+
+=== IAM Access Analyzer for S3
+
+É um recurso de monitoramento dos seus buckets do Amazon S3 para garantir que somente as pessoas pretendidas tenham acesso aos buckets do S3.
+A ideia é que você possa analisar isso e dizer: "Tudo bem, isso é normal, isso é esperado, ou isso parece um pouco um problema de segurança, porque eu não pretendia compartilhar esse balde com essas pessoas" e, portanto, você pode tomar providências. E isso é feito com o IAM Access Analyzer, que permite que você descubra os recursos da sua conta que são compartilhados com outras entidades.
+
+=== Storage Classes do S3
+
+1. S3 Standard: Para dados acessados com frequência. Alta durabilidade, alta disponibilidade e baixa latência.
+
+2. S3 Standard-IA (Infrequent Access): Para dados acessados ocasionalmente. Custo de armazenamento menor, mas cobra taxa de recuperação.
+
+3. S3 One Zone-IA: Versão mais barata do Standard-IA, mas armazena dados em uma única AZ. Ideal para dados recriáveis.
+
+4. S3 Glacier Instant Retrieval: Para dados arquivados, acessados raramente, mas que precisam de recuperação em milissegundos.
+
+5. S3 Glacier Flexible Retrieval: Baixo custo para arquivamento. Recuperação leva minutos a horas. Sem necessidade de acesso rápido.
+
+6. S3 Glacier Deep Archive: Opção mais barata para armazenamento de longo prazo. Recuperação pode levar até 12 horas.
+
+7. S3 Intelligent-Tiering: Muda automaticamente entre camadas (frequente, infrequente e arquivamento) com base no padrão de acesso do objeto. Evita pagar mais sem necessidade.
+
+=== AWS Storage Gateway
+
+Serviço de armazenamento híbrido para permitir que ambientes locais usem a AWS Cloud de forma integrada.
+
+=====================================
+    Bancos de dados RELACIONAIS
+=====================================
+
+
+=== Amazon RDS 
+
+O Amazon RDS (Relational Database Service) é um serviço gerenciado de banco de dados relacional. Ele cuida automaticamente de tarefas administrativas, como provisionamento, backups, patching, replicação e manutenção, permitindo que você foque na aplicação em vez da infraestrutura.
+
+Principais características:
+
+- Suporte a vários mecanismos: MySQL, PostgreSQL, MariaDB, Oracle, SQL Server e Amazon Aurora.
+- Recursos de backup automático, snapshots manuais e recuperação point-in-time.
+- Multi-AZ para alta disponibilidade e failover automático.
+- Read Replicas para escalar leituras.
+- Monitoramento integrado com CloudWatch e Performance Insights.
+- Atualizações e patches automáticos.
+- Opções de criptografia em repouso e em trânsito.
+
+Quando usar:
+
+- Para aplicações que precisam de bancos relacionais gerenciados, com alta disponibilidade, escalabilidade e menor esforço operacional.
+
+== Vantagem de usar RDS em vez de implantar um banco de dados em EC2
+
+O RDS é um serviço gerenciado:
+
+- Provisionamento automatizado e aplicação de patches no sistema operacional
+- Backups contínuos e restauração para um horário específico (Point in Time Restore)
+- Painéis de monitoramento
+- Réplicas de leitura para melhorar a performance de leitura
+- Configuração Multi-AZ para recuperação de desastres (Disaster Recovery)
+- Janelas de manutenção para atualizações
+- Capacidade de escalabilidade (vertical e horizontal)
+- Armazenamento baseado em EBS
+- Mas você não pode fazer SSH nas instâncias
+
+=== Amazon Aurora
+
+O Amazon Aurora é um banco de dados relacional totalmente gerenciado e compatível com MySQL e PostgreSQL, projetado pela AWS para ser mais rápido, mais escalável e mais resiliente que bancos tradicionais executados em RDS.
+
+Principais características:
+
+- Performance até 5x mais rápida que MySQL e 3x mais rápida que PostgreSQL.
+- Armazenamento distribuído em 6 cópias de dados espalhadas por 3 AZs (alta resiliência).
+- Autoescalabilidade de armazenamento (até 128 TB por cluster).
+- Failover muito rápido (geralmente em segundos).
+- Suporte a Read Replicas de alta performance para escalar leituras.
+- Compatível com engines MySQL e PostgreSQL, com melhorias internas.
+- Recursos avançados como Aurora Serverless v2, que ajusta automaticamente a capacidade conforme a carga.
+- Integração profunda com serviços AWS, como Lambda, IAM e CloudWatch.
+
+Quando usar:
+
+- Sistemas que exigem alta performance, alta disponibilidade e escalabilidade elástica, com mínima administração.
+
+Alternativa para substituir bancos corporativos caros (ex.: Oracle e SQL Server).
+
+
+=== Aurora Serverless
+
+O Aurora Serverless é uma versão do Amazon Aurora que ajusta automaticamente sua capacidade conforme a carga de trabalho. Ele elimina a necessidade de gerenciar instâncias de banco de dados, cobrando apenas pelos recursos efetivamente consumidos.
+Ele é ideal para aplicações com tráfego variável ou imprevisível, pois aumenta ou reduz a capacidade de forma automática, rápida e sem interrupções. Além disso, entra em modo de pausa quando não está sendo usado, reduzindo custos. É compatível com MySQL e PostgreSQL, mantendo a alta performance, disponibilidade e durabilidade do Aurora tradicional — mas sem a necessidade de configuração ou administração de servidores.
+Portanto, de uma perspectiva de exame, se você vir o Aurora sem sobrecarga de gerenciamento e assim por diante, pense no Aurora Serverless.
+
+=== RDS vs AURORA
+
+As principais diferenças entre o Amazon RDS e o Amazon Aurora estão no desempenho, na arquitetura e no custo. O Aurora foi projetado pela AWS para oferecer muito mais performance que os mecanismos tradicionais do RDS, chegando a até cinco vezes mais velocidade que o MySQL e três vezes mais que o PostgreSQL. Isso acontece porque o Aurora usa uma arquitetura distribuída e otimizada, com armazenamento compartilhado e replicações automáticas em seis cópias, distribuídas em três zonas de disponibilidade. Já o RDS utiliza a arquitetura padrão dos bancos open-source, com réplicas menos integradas e dependentes de configurações específicas.
+
+Em termos de disponibilidade e recuperação, o Aurora oferece failover mais rápido e automático, além de backups contínuos para o S3. O RDS também oferece alta disponibilidade com Multi-AZ, mas com um processo de failover geralmente mais lento e dependente da instância secundária. Sobre escalabilidade, o Aurora permite aumentar a capacidade de leitura com até quinze réplicas, enquanto o RDS varia de acordo com o mecanismo e oferece menos réplicas.
+
+Do ponto de vista de custos, o RDS geralmente é mais barato e simples para cargas de trabalho tradicionais ou de menor desempenho. Já o Aurora tende a custar mais, mas entrega desempenho superior, escalabilidade e eficiência operacional, sendo indicado para aplicações críticas ou que exigem alta performance.
+
+=== RDS Deployments
+
+Read Replicas:
+Cópias somente leitura do banco, com replicação assíncrona.
+Servem para escalar leituras e melhorar performance, mas não fornecem alta disponibilidade. O deployment Multi-Region é somente para Read Replicas.
+
+Multi-AZ:
+Mantém uma instância secundária com replicação síncrona em outra AZ.
+Serve para alta disponibilidade e failover automático, mas não aumenta escalabilidade.
+
+- Síncrono: grava nos dois ao mesmo tempo → mais consistente.
+- Assíncrono: grava primeiro no principal e replica depois → pode atrasar.
+
+=== ElastiCache
+
+O Amazon ElastiCache é um serviço de cache na memória totalmente gerenciado que melhora a performance de aplicações ao armazenar dados frequentemente acessados em memória RAM, que é muito mais rápida que um banco de dados tradicional.
+Ajuda a reduzir a carga nos bancos de dados para cargas de trabalho com uso intensivo de leitura.
+A AWS cuida da manutenção/aplicação de patches do sistema operacional, otimizações, configuração, monitoramento, recuperação de falhas e backups.
+Ex: um sistema esta lendo e gravando dados de seu banco de dados Amazon RDS, que é lento. E então, se possível, haverá o armazenamento em cache de alguns valores em um banco de dados do Amazon ElastiCache e isso será muito rápido porque está na memória.
+
+Ele suporta dois mecanismos populares:
+
+- Redis (Redis é um sistema de armazenamento de dados em memória de código aberto, usado como banco de dados, cache e corretor de mensagens)
+- Memcached (sistema de cache distribuído de objetos em memória de alta performance, usado para acelerar aplicações web ao armazenar dados frequentemente acessados na memória RAM)
+
+Redis: rico em recursos, persistência, replicação, failover → ideal para casos mais complexos.
+
+Memcached: simples, ultrarrápido e sem persistência → ideal para cache básico e distribuído.
+
+Com isso, reduz a latência e a carga em bancos de dados como RDS e DynamoDB, ajudando a aplicação a responder muito mais rápido.
+
+ElastiCache é comumente usado para:
+
+- Cache de leitura de banco de dados
+- Sessões de usuários
+- Caches de resultados de queries
+- Contadores e ranking (Redis)
+
+=== DynamoDB
+
+O Amazon DynamoDB é um banco de dados NoSQL, totalmente gerenciado e serverless, projetado para oferecer alta performance, baixa latência (milissegundos), e escalabilidade automática.
+
+Ele armazena dados no formato key-value e documentos (JSON), e não exige que você gerencie servidores, capacidade ou patches.
+Você paga apenas pelo uso (leitura, escrita e armazenamento).
+
+Principais características:
+
+- Serverless: sem gerenciar instâncias ou infraestrutura.
+- Alta disponibilidade e replicação automática entre múltiplas AZs.
+- Alta escalabilidade: lida com cargas de tráfego enormes.
+- Latência de milissegundos, muito rápido.
+- Modelagem NoSQL (tabelas, partições, chave primária).
+- Modo On-demand (cobra por request, ideal para tráfego variável).
+- Modo Provisioned (ideal para tráfego previsível, permite autoscaling).
+
+Quando usar DynamoDB:
+
+- Aplicações web e mobile com alto tráfego.
+- Jogos, e-commerce, IoT, sessões de usuário.
+- Sistemas que precisam de desempenho consistente e escalabilidade massiva.
+- Workloads serverless com Lambda.
+
+Palavras chave no exame: serverless e baixa latência
+
+-> Global Table: Maneira de deixar o DynamoDB acessível em diversas regiões criando replicas. Então o acesso de usuários perto das regiões terá baixa lateêcia
+
+=== DAX
+
+O DAX (DynamoDB Accelerator) é um cache em memória totalmente gerenciado e específico para o DynamoDB, projetado para reduzir a latência de leitura de milissegundos para microssegundos — até 10x mais rápido.
+
+Ele funciona como um cache de leitura que fica entre sua aplicação e o DynamoDB, armazenando respostas de queries e leituras frequentes.
+DAX acelera leituras, não escritas.
+
+E a diferença com o ElastiCache é que o DAX é totalmente integrado ao DynamoDB. Enquanto o ElastiCache pode ser usado para outros tipos de bancos de dados para fornecer recursos de armazenamento em cache. (Para Dynamo prefira DAX)
+
+=== Redshift
+
+O Amazon Redshift é um serviço de data warehouse totalmente gerenciado da AWS, usado para analisar grandes volumes de dados de forma rápida usando SQL.
+Ele é otimizado para consultas analíticas, não para transações (não substitui RDS ou DynamoDB).
+
+Redshift permite integrar dados de diversas fontes — S3, bancos relacionais, logs, sistemas de BI — e executar queries complexas para gerar relatórios, dashboards e análises.
+É OLAP – online analytical processing (Análise e armazenamento de dados)
+
+
+Redshift = Data warehouse → análise de dados em grande escala
+(Enquanto RDS é transacional e DynamoDB é NoSQL.)
+Armazenamento colunar (columnar storage)
+
+=== Amazon EMR
+
+Amazon EMR (Elastic MapReduce) é um serviço gerenciado para processar grandes volumes de dados usando frameworks como Apache Hadoop, Spark, Hive, Presto e outros.
+Ele é usado para Big Data, análises pesadas, processamento distribuído e transformação de dados em larga escala.
+
+O EMR cria um cluster de máquinas (EC2, EKS ou serverless) que divide e processa dados de forma paralela, acelerando muito o processamento de workloads complexas.
+EMR = Big Data com Hadoop/Spark em cluster gerenciado.
+
+=== Athena
+
+O Amazon Athena é um serviço serverless que permite consultar dados diretamente no Amazon S3 usando SQL, sem precisar criar servidores, clusters ou bancos de dados.
+Você paga somente pelas consultas, baseado nos dados lidos.
+
+Ele é ideal para análises rápidas, exploração de dados e criação de dashboards usando dados armazenados em Data Lakes.
+
+Athena = SQL Serverless no S3 para analizar dados(paga por query).
+
+=== Amazon Quicksight
+
+O Amazon QuickSight é um serviço de Business Intelligence (BI) totalmente gerenciado que permite criar dashboards, análises interativas e visualizações de dados na AWS.
+Ele é escalável, rápido e acessado via navegador, sem precisar instalar nada.
+
+QuickSight conecta-se a várias fontes de dados — S3, Redshift, Athena, RDS, DynamoDB, arquivos, aplicações externas — e permite criar gráficos e relatórios de forma simples.
+
+QuickSight = ferramenta de BI da AWS (dashboards e visualizações).
+
+=== DocumentDB
+
+O Amazon DocumentDB é um banco de dados NoSQL orientado a documentos, totalmente gerenciado e compatível com MongoDB.
+Isso significa que aplicações que usam MongoDB podem funcionar com DocumentDB praticamente sem mudanças.
+
+Ele foi projetado para alta performance, escalabilidade e disponibilidade, com armazenamento distribuído e replicado automaticamente entre múltiplas AZs.
+
+DocumentDB = MongoDB gerenciado na AWS.
+
+=== Neptune
+
+O Amazon Neptune é um banco de dados gráfico totalmente gerenciado, projetado para armazenar e consultar dados que têm relacionamentos complexos.
+Em vez de tabelas ou documentos, ele trabalha com vértices (nodes) e arestas (edges) — perfeito para entender conexões entre dados.
+
+Neptune = banco de dados de grafos (nodes + edges) para relacionamentos complexos.
+
+Casos de uso:
+
+- Redes sociais (amizades, conexões, seguidores).
+- Recomendação de produtos.
+- Fraude (detectar padrões entre contas).
+- Knowledge graphs (grafo de conhecimento).
+
+=== Amazon Timestream
+
+O Amazon Timestream é um banco de dados serverless de séries temporais (time-series), projetado para armazenar e analisar dados que mudam ao longo do tempo — como métricas, sensores, eventos e telemetria.
+
+Ele é otimizado para inserções rápidas, consultas eficientes com filtros de tempo e armazenamento automático em camadas (memória + disco), reduzindo custos.
+
+Timestream = banco serverless para dados com timestamp (IoT, métricas e telemetria).
+
+=== Amazon Managed Blockchain
+
+Amazon Managed Blockchain é um serviço totalmente gerenciado da AWS que permite criar e gerenciar redes de blockchain escaláveis usando frameworks populares como Hyperledger Fabric e Ethereum (suporte de leitura). Ele elimina a complexidade de configurar manualmente infraestrutura blockchain, permitindo que você crie nós, gerencie permissões e monitore a rede com poucos cliques.
+
+=== Amazon Glue
+
+O Amazon Glue é um serviço serverless de ETL (extract, transform, and load) totalmente gerenciado, usado para descobrir, catalogar, preparar e transformar dados para análises, data lakes e pipelines de dados.
+Ele automatiza tarefas de engenharia de dados como detecção de esquemas, limpeza e organização dos dados.
+
+Glue = ETL + Catálogo + Automação para Data Lakes.
+
+=== AWS DMS
+
+O AWS DMS (Database Migration Service) é um serviço gerenciado que permite migrar bancos de dados para a AWS de forma rápida, segura e com mínima interrupção.
+Ele suporta migrações entre bancos do mesmo tipo (homogêneas) ou de tipos diferentes (heterogêneas).
+
+Durante a migração, o DMS pode replicar dados em tempo real, mantendo o banco de origem sincronizado até a troca final.
+Pode ser usado por Athena, Redshift, EMR
+
+DMS = serviço de migração de banco com pouco downtime.
+
+
+=====================================
+          Other Compute 
+=====================================
+
+=== ECS - Elastic Container Service
+
+O Amazon ECS é um serviço totalmente gerenciado de orquestração de containers, usado para executar aplicações em containers (como Docker) na AWS.
+Ele gerencia tarefas, serviços, escalabilidade e integração com outros serviços AWS, permitindo rodar containers de forma simples e altamente escalável.
+Você deve provisionar e manter a infraestrutura por conta própria.I sso significa que você precisa criar instâncias EC2 com antecedência. A AWS se encarregará de iniciar ou interromper os contêineres para você, e tem integração com um Load Balancer
+
+ECS = orquestração de containers da AWS (mais simples, gerenciado e integrado).
+
+=== Fargate
+
+O AWS Fargate é um serviço serverless para containers que permite executar workloads de ECS ou EKS sem precisar gerenciar servidores, clusters ou EC2.
+Você define apenas CPU, memória e a imagem do container — a AWS cuida do resto (infra, escalabilidade, patches e capacidade).
+
+Fargate = container serverless. Você só define vCPU, RAM e a imagem → a AWS executa, escala e gerencia tudo.
+
+=== EKS
+
+O Amazon EKS é o serviço gerenciado da AWS para executar Kubernetes. Ele simplifica a criação, operação e escalabilidade de clusters Kubernetes, removendo a parte mais complexa do gerenciamento da infraestrutura.
+
+Com o EKS, você usa Kubernetes padrão, mas sem precisar configurar masters, control-plane, upgrades ou alta disponibilidade — a AWS gerencia tudo isso.
+
+EKS = Kubernetes gerenciado pela AWS. Controle mestre é da AWS; você gerencia apenas os nodes ou usa Fargate.
+
+=== Lambda
+
+O AWS Lambda é um serviço serverless de computação, onde você executa código sem gerenciar servidores.
+Você faz o upload da função, define memória e triggers — e o Lambda executa automaticamente em resposta a eventos, escalando conforme necessário.
+
+Você paga somente pelo tempo de execução (em milissegundos).
+Executa código em vários runtimes (Python, Node.js, Java, Go, etc.).
+Integra-se com mais de 200 serviços AWS (S3, API Gateway, DynamoDB, SQS...).
+Escala automaticamente conforme a quantidade de eventos.
+Só executa quando ativada por algum evento(event trigger)
+
+Casos de uso
+
+- Processar eventos do S3 (upload de arquivos).
+- APIs serverless usando API Gateway.
+- Processamento de mensagens SQS/SNS.
+- ETL e automações pequenas.
+- Jobs de backend por demanda.
+- Microserviços desencadeados por eventos. 
+- Criar Kron Jobs.
+
+O preço é baseado no número de chamadas e duração.
+
+Lambda = compute serverless que roda código em resposta a eventos e escala sozinho.
+
+=== API Gateway
+
+O Amazon API Gateway é um serviço totalmente gerenciado para criar, publicar, proteger, monitorar e versionar APIs em larga escala.
+Ele permite expor APIs REST, HTTP e WebSocket sem precisar gerenciar servidores, integrando-se facilmente com Lambda, ECS, EKS, EC2, DynamoDB e muitos outros serviços.
+
+API Gateway = cria e gerencia APIs em escala, muito usado com Lambda em arquiteturas serverless.
+
+=== AWS Batch
+
+O AWS Batch é um serviço totalmente gerenciado para executar workloads de processamento em lote (batch jobs) na AWS.
+Ele cria automaticamente a infraestrutura necessária, como instâncias EC2 ou Fargate, e agenda os jobs conforme a demanda, garantindo eficiência e otimização de custos.
+
+É ideal para tarefas que precisam processar grandes volumes de dados de forma paralela ou programada.
+
+AWS Batch = serviço para executar jobs em lote usando containers, com escalabilidade automática e otimização de custos.
+
+=== BATCH vs LAMBDA
+
+AWS Lambda é usado para código leve, rápido e orientado a eventos, enquanto o AWS Batch é usado para processamento pesado, trabalhos longos e em grande escala.
+
+Lambda:
+
+- Limite de tempo
+- Runtimes limitados
+- Espaço temporário em disco limitado
+- Serverless
+
+Batch:
+
+- Sem limite de tempo
+- Qualquer runtime, desde que empacotado como imagem Docker
+- Depende de EBS / instance store para espaço em disco
+- Baseado em EC2 (pode ser gerenciado pela AWS)
+
+Lambda = execuções rápidas e event-driven.
+Batch = processamento em lote, pesado e demorado.
+
+=== Amazon Lightsail
+
+O Amazon Lightsail é um serviço simplificado da AWS voltado para quem precisa criar aplicações rapidamente e sem complexidade, oferecendo servidores virtuais, bancos de dados, contêineres e redes com preços previsíveis e fixos.
+
+Ele é ideal para pequenos projetos, aplicações simples ou para quem está iniciando na AWS.
+
+Lightsail = AWS simplificada e barata para sites e aplicações pequenas, com preço fixo mensal.
+
+=====================================
+       Deployments and Managing 
+       infrastructure at Scale
+=====================================
+
+
+=== Cloud Formation
+
+O AWS CloudFormation é um serviço que permite criar, gerenciar e versionar infraestrutura na AWS por meio de código (IaC – Infrastructure as Code).
+Você define recursos (como EC2, VPC, S3, RDS, etc.) em arquivos YAML ou JSON, e o CloudFormation provisiona tudo automaticamente.
+Do ponto de vista do exame, o CloudFormation será usado quando tivermos infraestrutura como código, quando    precisarmos repetir uma arquitetura em diferentes ambientes, diferentes regiões ou até mesmo diferentes contas da AWS.
+
+CloudFormation = infraestrutura como código (IaC), usando templates YAML/JSON para criar recursos AWS automaticamente.
+
+
+=== CDK - Cloud development kit
+
+O AWS CDK é um framework que permite definir infraestrutura AWS usando linguagens de programação comuns, como TypeScript, Python, Java, C#, Go e JavaScript, ao invés de usar apenas YAML/JSON como no CloudFormation.
+
+Ele gera automaticamente templates CloudFormation, combinando a facilidade da programação com os benefícios do IaC (Infrastructure as Code).
+
+CDK = CloudFormation com poder de programação.
+Você escreve infraestrutura com código (ex.: TypeScript/Python), e ele converte para CloudFormation.
+
+=== Beanstalk
+
+O Elastic Beanstalk é um serviço que permite implantar e gerenciar aplicações web automaticamente, sem precisar configurar manualmente a infraestrutura.
+Você apenas faz o upload do código (Java, Python, Node.js, .NET, PHP, Go, Docker, etc.), e o Beanstalk cuida do provisionamento de servidores EC2, balanceamento de carga, Auto Scaling e monitoramento.
+
+Ele é ideal para quem quer foco no código e não na infraestrutura. (PaaS)
+
+Elastic Beanstalk = deploy automático de aplicações com gestão da infraestrutura (EC2 + ALB + Auto Scaling), focando no código.
+
+o Beanstalk tem um conjunto completo de monitoramento disponível no próprio serviço. Portanto, haverá um agente de integridade em cada instância do EC2 no Beanstalk que enviará métricas para o CloudWatch. E então, no Beanstalk, você pode visualizar essas métricas, fazer algum monitoramento e assim por diante. (Pode cair no exame)
+
+=== CodeDeploy
+
+O AWS CodeDeploy é um serviço que automatiza o deploy de aplicações em servidores EC2, máquinas locais (on-premises) ou funções Lambda, garantindo atualizações confiáveis, escaláveis e com mínimo downtime.
+Ele permite realizar deploys de forma controlada, com suporte a rollback automático em caso de falhas.
+
+Ideal para quem deseja automatizar deploys frequentes com segurança, mantendo controle total sobre o processo.
+
+AWS CodeDeploy = automatização de deploys com controle, rollback e estratégias como blue/green ou in-place, funcionando para EC2, on-premise ou Lambda.
+
+=== CodeCommit
+
+Serviço descontinuado pela AWS, mas que é igual o Github
+
+=== CodeBuild
+
+O AWS CodeBuild é um serviço totalmente gerenciado de compilação e build contínuo (CI) que compila código, executa testes e gera artefatos de software prontos para deploy.
+Ele substitui servidores de build tradicionais, eliminando a necessidade de manutenção de infraestrutura.
+
+O CodeBuild escala automaticamente conforme a demanda e você paga apenas pelo tempo de computação usado.
+
+CodeBuild = serviço serverless que faz o build e testes do código (CI), escalando automaticamente e integrado ao pipeline de deploy.
+
+=== Code Pipeline
+
+O AWS CodePipeline é um serviço de CI/CD totalmente gerenciado, que automatiza todo o fluxo de entrega de software — desde o código-fonte até o deploy em produção.
+*Ele permite integrar serviços como CodeCommit, CodeBuild, CodeDeploy, Lambda, ECS, S3 e outros, criando etapas automatizadas de compilação, teste e implantação.*
+
+Com o CodePipeline, cada mudança de código é detectada e enviada automaticamente para o pipeline, garantindo entregas ágeis e consistentes.
+
+CodePipeline = “orquestrador de CI/CD”, que automatiza todo o fluxo de entrega do código até o deploy.
+
+=== Code Artifact
+
+O AWS CodeArtifact é um serviço gerenciado de repositório de pacotes para armazenar, compartilhar e versionar dependências de software utilizadas em projetos, como bibliotecas e módulos.
+Ele é compatível com ferramentas populares como npm, Maven, Gradle, pip (Python), NuGet (.NET), Yarn, entre outras.
+
+O CodeArtifact permite centralizar dependências internas e integrar com repositórios públicos (como npmjs, Maven Central e PyPI) com segurança e controle de acesso via IAM.
+
+CodeArtifact = repositório gerenciado de pacotes e dependências (como npm/Maven/pip) com segurança e controle pela AWS.
+
+=== SSM - Systems Manager
+
+O AWS Systems Manager (SSM) é um serviço que ajuda a gerenciar, automatizar e monitorar instâncias EC2, servidores on-premises e recursos em nuvem.
+Ele permite executar comandos remotamente, aplicar patches, coletar inventário, automatizar tarefas administrativas e acessar instâncias sem precisar abrir SSH ou RDP.
+
+É amplamente utilizado para gestão operacional e automação de infraestrutura, aumentando segurança e eficiência.
+
+Principais características: 
+
+- Session Manager → acesso remoto à instância via console AWS, sem SSH/porta aberta.
+- Run Command → executar comandos em múltiplas máquinas ao mesmo tempo.
+- Patch Manager → aplica patches automaticamente.
+- Automation → executa rotinas automáticas de manutenção.
+- Parameter Store → armazena variáveis/configurações (com ou sem criptografia).
+- Inventory & Compliance → coleta informações dos servidores.
+- Funciona em EC2, servidores físicos/VMs e até outras clouds (via agente SSM).
+
+
+SSM = gestão e automação de servidores (EC2 e on-premises) + acesso remoto sem SSH + automação de manutenção.
+
+Parameter Store = armazenamento seguro de variáveis e segredos com KMS (Key Management Service).
+
+Session Manager = conectar ao servidor sem SSH, direto pelo console AWS, com segurança e auditoria.
+
+Então, de uma perspectiva de exame, sempre que você vê uma maneira de corrigir sua frota de instâncias EC2 ou servidores On-Premises, você tem que pensar no SSM, ou se você quisesse executar um comando de forma consistente em todos os seus servidores, novamente, SSM seria o caminho certo.
+
+
+=====================================
+       AWS Global Infrastructure
+=====================================
+
+Conceitos para lembrar: 
+Política de Roteamento Ponderado destina-se a distribuir o tráfego por várias instâncias do instituto.
+A latência é para minimizar a latência e o failover é para ajudar na recuperação de desastres.
+
+=== Route 53
+
+O Amazon Route 53 é o serviço de DNS (Domain Name System) gerenciado da AWS, usado para registrar domínios, rotear o tráfego de usuários para aplicações e verificar a saúde de recursos.
+
+Ele converte nomes de domínio (como meusite.com) em endereços IP acessíveis e oferece alta disponibilidade e baixa latência global por meio de servidores DNS distribuídos.
+
+Route 53 = serviço DNS da AWS + registro de domínio + roteamento inteligente de tráfego com health checks.
+
+=== CloudFront
+
+O Amazon CloudFront é o serviço de CDN (Content Delivery Network) da AWS, usado para distribuir conteúdo (como sites, vídeos, APIs e arquivos) com baixa latência e alta velocidade.
+Ele armazena cópias do conteúdo em Edge Locations (pontos de presença globalmente distribuídos), aproximando os dados dos usuários finais.
+
+*Se ver escrito CDN pense Cloudfront*
+CloudFront = CDN da AWS → acelera e protege conteúdo globalmente usando Edge Locations.
+
+Diferença entre CloudFront e S3 Cross region Replication:
+
+CloudFront = acelera acesso via cache global (usuários mais rápidos).
+S3 CRR = copia objetos para outro bucket em outra região (durável e permanente).
+
+=== S3 Transfer Acceleration
+
+O S3 Transfer Acceleration é um recurso do Amazon S3 que acelera o envio e recebimento de arquivos grandes entre clientes e buckets S3, principalmente quando o usuário está geograficamente distante da região do bucket.
+
+Ele utiliza a rede global otimizada da AWS (Edge Locations do CloudFront) para encaminhar os dados mais rapidamente até o bucket, reduzindo significativamente a latência de upload.
+
+S3 Transfer Acceleration = upload/download acelerado para buckets S3 usando Edge Locations (ótimo para grandes distâncias).
+
+=== AWS Global Accelerator
+
+O AWS Global Accelerator é um serviço que melhora a performance e a disponibilidade de aplicações globais, roteando o tráfego dos usuários pela rede global da AWS até a região mais próxima e saudável.
+
+Diferente do CloudFront (que acelera conteúdo em cache), o Global Accelerator acelera tráfego dinâmico e não cacheável, como APIs, aplicações em tempo real, jogos, etc. Ele usa endereços IP fixos para facilitar o acesso e proporciona failover rápido entre regiões.
+
+Global Accelerator = melhora performance e disponibilidade para tráfego dinâmico (não cacheado) usando IP fixo e rede global da AWS.
+
+=== AWS Outposts
+
+AWS Outposts = “AWS dentro do seu data center” → hardware físico instalado localmente para rodar serviços da AWS com baixa latência e requisitos locais.
+
+=== WaveLength
+
+O AWS Wavelength leva serviços de computação e armazenamento da AWS diretamente para dentro das redes 5G de provedores de telecomunicações, permitindo latência ultrabaixa ao evitar que o tráfego precise percorrer a internet até uma região AWS.
+
+Diferente do CloudFront (conteúdo em cache) e do Global Accelerator (roteamento via backbone AWS), o Wavelength executa workloads no nível da rede móvel, ideal para aplicações que precisam de resposta em tempo real, como veículos autônomos, realidade aumentada e edge computing.
+
+Wavelength = computação dentro da rede 5G → latência ultrabaixa para aplicações móveis e IoT.
+Executa workloads bem próximo do usuário, diretamente com operadoras de telecom.
+
+=== AWS LocalZones
+
+O AWS Local Zones leva infraestrutura de computação, armazenamento e rede da AWS para próximo fisicamente dos usuários em grandes centros urbanos, reduzindo a latência para aplicações que exigem processamento próximo do cliente.
+
+Diferente das Regiões AWS tradicionais, que podem estar a centenas ou milhares de quilômetros, as Local Zones ficam em cidades específicas (ex.: São Paulo, Los Angeles), ideais para workloads sensíveis à latência.
+
+Local Zones = infraestrutura AWS próxima ao usuário (em grandes cidades) → baixa latência para aplicações locais.
+
+=== Global applications architecture
+
+Temos dois tipos de arquitetura:
+
+Ativo/Passivo: Quando eu tenho read replicas espalhadas por diferentes regiões, mas somente uma é a principal e só ela grava dados, isso significa que eu o acesso a aplicação será rapido em diversas regioes, mas a gravação não será tão rápida. 
+
+Ativo/Ativo: nesse caso, além das read replicas, temos instancias que podem também gravar estando em outras regiões, isso faz com que tanto a leitura quanto a gravação de dados seja rapida em qualquer região.
+
+=====================================
+          Cloud Integration
+=====================================
+
+Tem a ver com Aplicações síncronas e assíncronas.
+
+=== SQS - Simple Queue Service
+
+O Amazon SQS é um serviço de fila de mensagens totalmente gerenciado, usado para desacoplar componentes de sistemas distribuídos e permitir comunicação assíncrona entre aplicações.
+
+Ele garante que mensagens sejam armazenadas com segurança até que sejam processadas, evitando perda de dados e permitindo que serviços funcionem de forma independente.
+
+SQS = serviço de fila para comunicação assíncrona entre serviços, garantindo armazenamento temporário seguro e desacoplamento. 🚀
+
+=== SNS - Simple Notification Service
+
+O Amazon SNS é um serviço de mensageria baseado em publicação e assinatura (pub/sub) que permite enviar notificações em tempo real para múltiplos destinatários ao mesmo tempo.
+
+Diferente do SQS (que armazena mensagens para processamento assíncrono), o SNS distribui a mensagem imediatamente para vários canais como e-mail, SMS, Lambda, HTTP/S, SQS, entre outros. (Envia para pessoas que estão "inscritas" para ver as notificações)
+
+SNS = envio instantâneo de mensagens para vários destinos (pub/sub), ideal para notificações e broadcast. 
+
+=== Kinesis
+
+O Amazon Kinesis é um serviço da AWS para coleta, processamento e análise de dados em tempo real, ideal para fluxos contínuos de grandes volumes de informações (streaming), como logs, cliques, métricas, vídeos ou dados IoT.
+
+=== Diferença SQSxSNSxKinesis
+
+SQS = fila (1 para 1)
+SNS = broadcast (1 para muitos)
+Kinesis = streaming em tempo real (dados contínuos e massivos)
+
+=== Amazon MQ
+
+O Amazon MQ é um serviço gerenciado de broker de mensagens compatível com padrões de mensageria tradicionais, como Apache ActiveMQ e RabbitMQ. Ele é usado para migrar ou integrar sistemas que já utilizam protocolos de mensageria como AMQP, MQTT, OpenWire, STOMP, JMS, sem precisar reescrever aplicações para usar SQS ou SNS.
+
+É ideal para ambientes on-premises que precisam ser movidos para a AWS, mantendo compatibilidade com arquiteturas existentes.
+
+Amazon MQ = broker gerenciado (ActiveMQ/RabbitMQ) para migração e compatibilidade com sistemas legados que usam protocolos tradicionais.
+
+=====================================
+          Cloud Monitoring
+=====================================
+
+
+=== CloudWatch
+
+O Amazon CloudWatch é o serviço de monitoramento, observabilidade e automação de respostas da AWS. Ele permite coletar métricas, logs e eventos dos recursos da AWS e de aplicações, acompanhar o desempenho em tempo real, criar alertas e reagir automaticamente a problemas ou mudanças.
+
+É fundamental para entender o comportamento da infraestrutura e aplicações na nuvem.
+
+Componentes principais
+
+1. CloudWatch Metrics:
+
+São dados numéricos coletados em intervalos regulares.
+Exemplos:
+CPUUtilization (EC2)
+FreeStorageSpace (RDS)
+Invocations/Duration (Lambda)
+Requests (API Gateway)
+Também é possível criar Custom Metrics (métricas personalizadas).
+As métricas podem ser visualizadas em dashboards.
+
+Exemplo para prova: "Métricas são valores numéricos coletados automaticamente ou enviados manualmente ao CloudWatch."
+
+2. CloudWatch Alarms
+
+São alertas configurados sobre métricas.
+Quando o valor de uma métrica ultrapassa um limite (threshold), um alarme pode:
+
+Enviar uma notificação via SNS.
+Executar uma ação automática (ex: iniciar Auto Scaling).
+Acionar uma função Lambda.
+Estados: OK, ALARM, INSUFFICIENT_DATA.
+
+Exemplo para prova: “Alarme pode disparar auto scaling quando a CPU de uma instância ultrapassar 80%.”
+
+3. CloudWatch Logs
+
+Coleta, armazena e analisa logs de sistemas e aplicações.
+Pode coletar logs de EC2 (via agente), Lambda, VPC Flow Logs, API Gateway, ECS, EKS, etc.
+Permite definir Log Retention (quanto tempo os logs são mantidos).
+Pode filtrar log e gerar métricas com Metric Filters.
+
+Exemplo para prova: “CloudWatch Logs pode coletar logs de uma aplicação rodando em EC2 usando CloudWatch Agent.”
+
+4. EventBridge (antigo CloudWatch Events)
+
+O EventBridge é a funcionalidade baseada em eventos do CloudWatch que permite reagir automaticamente a mudanças na AWS ou em aplicações externas (SaaS). Também é como se você agendasse cron jobs.
+
+Ele detecta eventos e executa ações, funcionando como um sistema de automação.
+
+Exemplos de eventos:
+
+Uma instância EC2 é iniciada
+Um bucket S3 é criado
+Um pipeline do CodePipeline falha
+Um evento vindo de uma aplicação SaaS (como Zendesk ou GitHub)
+
+Ações possíveis:
+
+Executar uma Lambda
+Iniciar Step Functions
+Enviar para SQS/SNS
+Publicar em Kinesis
+Acionar serviços externos
+
+Exemplo para prova:
+“EventBridge reage a eventos (ex: criação de um EC2) e executa ações automaticamente.”
+
+
+=== AWS CloudTrail
+
+O AWS CloudTrail é um serviço de auditoria e rastreamento de atividades na AWS. Ele registra todas as ações realizadas por usuários, serviços e aplicações (via Console, CLI ou API), permitindo identificar quem fez o quê, quando, como e com qual resultado.
+
+É essencial para segurança, conformidade, investigação de incidentes e governança, pois fornece histórico detalhado das mudanças e acessos aos recursos.
+
+CloudTrail = auditoria e rastreamento de ações (quem fez o quê, quando e como).
+É o “monitor de atividades históricas e de segurança” da AWS — registra eventos, detecta comportamentos anômalos e suporta compliance.
+
+
+=== X-Ray
+
+O AWS X-Ray é um serviço de análise de performance e rastreamento de requisições distribuídas. Ele ajuda a identificar gargalos, erros e latência em aplicações — especialmente em arquiteturas microservices, serverless (Lambda) ou distribuídas.
+
+Permite visualizar todo o caminho percorrido por uma requisição (end-to-end), mostrando quanto tempo cada serviço, API ou função demorou para responder.
+
+X-Ray = diagnóstico de performance → rastreia requisições end-to-end.
+É o “raio-x da aplicação” — mostra onde está lento, onde falha e como os serviços interagem.
+
+=== CodeGuru
+
+O AWS CodeGuru é um serviço de otimização de código e desempenho baseado em Machine Learning, que ajuda desenvolvedores a encontrar problemas, melhorar performance e reduzir custos em aplicações.
+
+Ele faz análise automática de código (static review) e perfilamento em tempo real (runtime profiling), sugerindo melhorias com base nas melhores práticas da AWS.
+
+CodeGuru = IA que revisa e otimiza código e performance.
+“É como um revisor automático + profiler inteligente para melhorar qualidade e eficiência da aplicação.”
+
+=== AWS Health DashBoard
+
+O AWS Health Dashboard é um serviço que fornece visão em tempo real sobre a saúde dos serviços da AWS e o impacto direto na sua conta. Ele alerta sobre manutenções, incidentes, falhas ou mudanças que possam afetar seus recursos, ajudando a agir proativamente.
+
+Diferente do status.aws.amazon.com (que mostra o status geral da AWS), o AWS Health Dashboard mostra informações personalizadas para a sua conta.
+
+AWS Health Dashboard = “status personalizado da AWS para a sua conta”
+Mostra eventos que podem afetar seus recursos, com alertas de saúde, incidentes e manutenções planejadas.
+
+
+=====================================
+        VPC and Networking
+=====================================
+
+A VPC (Virtual Private Cloud) é a rede virtual privada dentro da AWS onde os recursos são executados. Dentro dela, organizamos os recursos em subnets, que podem ser públicas (com acesso direto à internet por meio de um Internet Gateway) ou privadas (sem acesso direto; só podem sair via NAT Gateway, que permite acesso de saída, mas não recebe conexões externas).
+
+NAT Gateways (AWS-managed)
+NAT Instances (self-managed) 
+
+Para controlar a segurança da rede, usamos dois níveis: os Security Groups, que funcionam como firewalls das instâncias e são stateful (ou seja, se uma conexão é permitida na entrada, o retorno é automaticamente permitido), e as Network ACLs (NACLs), que protegem a subnet e são stateless, exigindo regras de entrada e saída explícitas. Os SGs só permitem tráfego, enquanto as NACLs podem permitir ou negar, avaliando regras por ordem.
+
+Além disso, para análise e auditoria de tráfego, existe o VPC Flow Logs, que registra informações sobre o tráfego aceito ou rejeitado entre interfaces, ajudando em diagnósticos de rede.
+
+Quando queremos que diferentes VPCs se comuniquem, podemos usar VPC Peering, que permite um link direto entre duas VPCs, mas não suporta roteamento transitivo (ou seja, não dá para VPC A falar com C passando por B). Para ambientes maiores, é melhor usar o Transit Gateway, que funciona como um hub central conectando várias VPCs e redes locais e permite roteamento transitivo.
+
+Caso haja necessidade de acessar serviços AWS (como S3 ou DynamoDB) sem sair para a internet, usamos os VPC Endpoints — que podem ser do tipo Interface (para APIs em geral) ou Gateway (exclusivo para S3 e DynamoDB), proporcionando comunicação privada com esses serviços.
+
+Para conectar a VPC a redes locais (como um data center físico), temos duas opções: Site-to-Site VPN, que usa a internet para o túnel criptografado (mais barata, rápida de configurar, mas com variação de latência), e AWS Direct Connect, que cria uma conexão física dedicada entre a infraestrutura local e a AWS, oferecendo maior estabilidade e menor latência, porém com custo e tempo de instalação maiores.
+
+Resumo para lembrar na prova: 
+
+A VPC é a rede privada onde tudo acontece. Subnets públicas usam Internet Gateway, subnets privadas usam NAT Gateway para sair. Security Groups protegem instâncias e são stateful; NACLs protegem subnets e são stateless. Flow Logs registram o tráfego. Peering conecta poucas VPCs, Transit Gateway é o hub para muitas. Endpoints fornecem acesso aos serviços AWS sem internet. Para integração com redes locais, VPN é mais simples via internet e Direct Connect é conexão física dedicada.
+
+VPC = rede privada AWS.
+Subnets públicas usam IGW, privadas usam NAT Gateway.
+SG (stateful) protegem instâncias → só permitem.
+NACL (stateless) protegem subnets → permitem ou negam.
+Flow Logs = rastreio de tráfego (usado para load balancers, aurora, ElastiCache, RDS etc, e pode ir para CloudWatch, S3 etc).
+VPC Peering conecta VPCs (sem trânsito).
+Transit Gateway conecta várias redes com suporte a trânsito.
+VPC Endpoints acessam AWS internamente via PrivateLink (Endpoint Gateway ou Endpoint Interface).
+VPN = conexão via internet (rápida e barata).
+Direct Connect = conexão física dedicada (mais estável).
+
+=== NACL vs Security Group
+
+Os Security Groups (Grupos de Segurança) atuam como firewalls virtuais a nível de instância, protegendo máquinas específicas como EC2. Eles funcionam com regras stateful, ou seja, se uma requisição de entrada (inbound) for permitida, a resposta de saída (outbound) é automaticamente autorizada, mesmo sem uma regra explícita de saída. Além disso, os Security Groups não bloqueiam tráfego, apenas permitem; isso significa que você define apenas o que é permitido, e todo o restante é automaticamente negado. Outro ponto importante é que eles operam apenas com base em IP e portas, e não suportam regras baseadas em número de protocolo.
+
+Já os NACLs (Network Access Control Lists — Listas de Controle de Acesso de Rede) funcionam a nível de sub-rede, atuando como uma barreira de segurança entre sub-redes dentro da VPC. Diferentemente dos Security Groups, são stateless, então é necessário configurar regras tanto para entrada quanto para saída de forma explícita. Além disso, os NACLs podem permitir ou negar tráfego, o que os torna úteis para bloquear acessos indesejados, como de um IP específico. Eles são avaliados em ordem numérica, e assim que uma regra compatível é encontrada, a decisão é aplicada.
+
+🔎 Resumo rápido para memorizar:
+
+Security Groups → nível instância, stateful, apenas permitem, não bloqueiam, regras aplicadas a recursos como EC2.
+
+NACLs → nível sub-rede, stateless, podem permitir ou negar, regras avaliadas em ordem.
+
+NÃO ESQUECER DE ANOTAR A PÁGINA QUE VOCE PAROU NOS SLIDES
