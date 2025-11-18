@@ -1011,8 +1011,14 @@ Flow Logs = rastreio de tráfego (usado para load balancers, aurora, ElastiCache
 VPC Peering conecta VPCs (sem trânsito).
 Transit Gateway conecta várias redes com suporte a trânsito.
 VPC Endpoints acessam AWS internamente via PrivateLink (Endpoint Gateway ou Endpoint Interface).
+PrivateLink = conexão privada direta para serviços AWS ou terceiros, sem internet.
+
+
 VPN = conexão via internet (rápida e barata).
-Direct Connect = conexão física dedicada (mais estável).
+Direct Connect = conexão física dedicada (mais estável e demorado para ser feita).
+
+Do ponto de vista do exame, eles perguntarão se é uma VPN site a site, você deve escolher ou uma conexão direta para se conectar entre o seu data center local e a AWS. E realmente depende de dois fatores. Número um, vai ser privado ou não?
+E o número dois é: isso precisa ser estabelecido rapidamente ou não. E a partir dessas informações, você deve ser capaz de selecionar VPN site to site ou Direct Connect.
 
 === NACL vs Security Group
 
@@ -1020,10 +1026,44 @@ Os Security Groups (Grupos de Segurança) atuam como firewalls virtuais a nível
 
 Já os NACLs (Network Access Control Lists — Listas de Controle de Acesso de Rede) funcionam a nível de sub-rede, atuando como uma barreira de segurança entre sub-redes dentro da VPC. Diferentemente dos Security Groups, são stateless, então é necessário configurar regras tanto para entrada quanto para saída de forma explícita. Além disso, os NACLs podem permitir ou negar tráfego, o que os torna úteis para bloquear acessos indesejados, como de um IP específico. Eles são avaliados em ordem numérica, e assim que uma regra compatível é encontrada, a decisão é aplicada.
 
-🔎 Resumo rápido para memorizar:
+Resumo rápido para memorizar:
 
 Security Groups → nível instância, stateful, apenas permitem, não bloqueiam, regras aplicadas a recursos como EC2.
 
 NACLs → nível sub-rede, stateless, podem permitir ou negar, regras avaliadas em ordem.
+
+=== AWS Client VPN
+
+O AWS Client VPN é um serviço gerenciado que permite que usuários remotos (como funcionários ou colaboradores) se conectem com segurança à sua VPC a partir de qualquer lugar, usando VPN sobre a internet. Ele funciona como uma VPN tradicional, mas totalmente gerenciada pela AWS, sem necessidade de servidores próprios para autenticação ou roteamento.
+
+Client VPN = VPN gerenciada AWS para usuários remotos acessarem a VPC de forma segura e escalável.
+
+
+=== Transit Gateway
+
+O AWS Transit Gateway (TGW) é um serviço que funciona como um hub central para interconectar múltiplas VPCs, redes on-premises e conexões VPN ou Direct Connect. Ele simplifica a arquitetura de rede, substituindo a necessidade de múltiplos VPC Peering e permitindo o roteamento transitivo, ou seja, VPC A pode se comunicar com VPC C passando pelo hub.
+
+Transit Gateway = hub central que conecta várias VPCs e redes locais, permitindo roteamento transitivo e simplificando arquitetura de rede.
+
+Definição de Hub: um hub é um ponto central de conexão que permite que várias redes, dispositivos ou segmentos de rede se comuniquem entre si. Pense nele como um “ponto de encontro”: tudo que chega nesse ponto pode ser enviado para os destinos conectados a ele (dependendo das regras de roteamento).
+
+Então, quando no exame, você vê uma maneira de conectar centenas ou milhares de VPC juntos, com sua infraestrutura local, não pense mais do que o Transit Gateway.
+
+
+=====================================
+        Machine Learning
+=====================================
+
+=== Rekognition → análise de imagens e vídeos (detecção de objetos, faces, cenas).
+=== Transcribe → converte áudio em texto (speech-to-text).
+=== Polly → converte texto em fala (text-to-speech).
+=== Translate → traduz texto automaticamente entre idiomas.
+=== Lex + Connect → cria chatbots e assistentes virtuais, podendo integrar com call centers.
+=== Comprehend → análise de texto (sentimento, entidades, tópicos).
+=== SageMaker AI → serviço para criar, treinar e implantar modelos de ML (mais genérico).
+=== Kendra → motor de busca inteligente para empresas (documentos internos).
+=== Personalize → recomendações personalizadas (como em e-commerce).
+=== Textract → extrai texto, formulários e tabelas de documentos digitalizados.
+
 
 NÃO ESQUECER DE ANOTAR A PÁGINA QUE VOCE PAROU NOS SLIDES
